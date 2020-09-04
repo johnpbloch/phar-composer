@@ -93,6 +93,9 @@ class Package
             ->notPath('/^composer\.phar/')
             ->notPath('/^phar-composer\.phar/')
             ->in($this->getDirectory());
+        foreach($this->getExcluded() as $exclude){
+            $iterator = $iterator->notPath($exclude);
+        }
 
         return $bundle->addDir($iterator);
     }
@@ -105,5 +108,10 @@ class Package
     public function getBins()
     {
         return isset($this->package['bin']) ? $this->package['bin'] : array();
+    }
+
+    public function getExcluded()
+    {
+        return $this->package['extra']['phar']['excluded'] ?? [];
     }
 }
