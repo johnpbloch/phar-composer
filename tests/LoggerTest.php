@@ -1,29 +1,29 @@
 <?php
 
-use Clue\PharComposer\Logger as Logger;
+use Clue\PharComposer\Logger;
+use PHPUnit\Framework\Attributes\Before;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 
 class LoggerTest extends TestCase
 {
     /**
      * instance to test
      *
-     * @type  Logger
+     * @var Logger
      */
     private $logger;
 
     /**
      * set up test environment
-     *
-     * @before
      */
+    #[Before]
     public function setUpLogger()
     {
         $this->logger = new Logger();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function echosToStdOutByDefault()
     {
         ob_start();
@@ -34,13 +34,10 @@ class LoggerTest extends TestCase
         ob_end_clean();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function callsGivenOutputFunctionWhenSet()
     {
-        $that = $this;
-        $this->logger->setOutput(function($message) use($that) { $that->assertEquals('some informational message' . PHP_EOL, $message);});
+        $this->logger->setOutput(function ($message) { $this->assertEquals('some informational message' . PHP_EOL, $message); });
         $this->logger->log('some informational message');
     }
 }

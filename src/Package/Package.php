@@ -31,7 +31,7 @@ class Package
      */
     public function getName()
     {
-        return isset($this->package['name']) ? $this->package['name'] : null;
+        return $this->package['name'] ?? null;
     }
 
     /**
@@ -57,11 +57,7 @@ class Package
      */
     public function getPathVendor()
     {
-        $vendor = 'vendor';
-        if (isset($this->package['config']['vendor-dir'])) {
-            $vendor = $this->package['config']['vendor-dir'];
-        }
-        return $vendor . '/';
+        return ($this->package['config']['vendor-dir'] ?? 'vendor') . '/';
     }
 
     /**
@@ -93,7 +89,7 @@ class Package
             ->notPath('/^composer\.phar/')
             ->notPath('/^phar-composer\.phar/')
             ->in($this->getDirectory());
-        foreach($this->getExcluded() as $exclude){
+        foreach ($this->getExcluded() as $exclude) {
             $iterator = $iterator->notPath($exclude);
         }
 
@@ -107,7 +103,7 @@ class Package
      */
     public function getBins()
     {
-        return isset($this->package['bin']) ? $this->package['bin'] : array();
+        return $this->package['bin'] ?? [];
     }
 
     public function getExcluded()

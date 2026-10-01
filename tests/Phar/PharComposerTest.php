@@ -1,6 +1,10 @@
 <?php
 
+use Clue\PharComposer\Package\Bundle;
+use Clue\PharComposer\Package\Package;
 use Clue\PharComposer\Phar\PharComposer;
+use PHPUnit\Framework\Attributes\Depends;
+use PHPUnit\Framework\TestCase;
 
 class PharComposerTest extends TestCase
 {
@@ -10,7 +14,7 @@ class PharComposerTest extends TestCase
 
         $this->assertEquals('bin/phar-composer', $pharcomposer->getMain());
 
-        $this->assertInstanceOf('Clue\PharComposer\Package\Package', $pharcomposer->getPackageRoot());
+        $this->assertInstanceOf(Package::class, $pharcomposer->getPackageRoot());
         $this->assertNotCount(0, $pharcomposer->getPackagesDependencies());
 
         $this->assertEquals('vendor/', $pharcomposer->getPackageRoot()->getPathVendor());
@@ -21,14 +25,12 @@ class PharComposerTest extends TestCase
 
     public function testConstructorThrowsWhenPathIsNotFile()
     {
-        $this->setExpectedException('InvalidArgumentException', 'Unable to parse given path');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unable to parse given path');
         new PharComposer(__DIR__);
     }
 
-    /**
-     * @param PharComposer $pharcomposer
-     * @depends testConstructor
-     */
+    #[Depends('testConstructor')]
     public function testSetters(PharComposer $pharcomposer)
     {
         $pharcomposer->setMain('example/phar-composer.php');
@@ -44,7 +46,8 @@ class PharComposerTest extends TestCase
     {
         $pharer = new PharComposer(__DIR__ . '/../fixtures/05-invalid-bin/composer.json');
 
-        $this->setExpectedException('UnexpectedValueException', 'Bin file "bin/invalid" does not exist');
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Bin file "bin/invalid" does not exist');
         $pharer->getMain();
     }
 
@@ -62,7 +65,8 @@ class PharComposerTest extends TestCase
         $pharer->setOutput(false);
         $pharer->setTarget('/dev/null');
 
-        $this->setExpectedException('RuntimeException', 'not properly installed');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('not properly installed');
         $pharer->build();
     }
 
@@ -76,7 +80,8 @@ class PharComposerTest extends TestCase
         $pharer->setOutput(false);
         $pharer->setTarget('/dev/null');
 
-        $this->setExpectedException('RuntimeException', 'Unable to write phar:');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to write phar:');
         $pharer->build();
     }
 
@@ -87,14 +92,14 @@ class PharComposerTest extends TestCase
         $deps = $pharer->getPackagesDependencies();
 
         $this->assertCount(1, $deps);
-        $this->assertInstanceOf('Clue\PharComposer\Package\Package', reset($deps));
+        $this->assertInstanceOf(Package::class, reset($deps));
 
-        /* @var Clue\PharComposer\Package\Package $package */
+        /* @var Package $package */
         $package = reset($deps);
 
         $bundle = $package->bundle();
 
-        $this->assertInstanceOf('Clue\PharComposer\Package\Bundle', $bundle);
+        $this->assertInstanceOf(Bundle::class, $bundle);
         $this->assertSame(0, iterator_count($bundle));
     }
 
@@ -105,18 +110,13 @@ class PharComposerTest extends TestCase
         $deps = $pharer->getPackagesDependencies();
 
         $this->assertCount(1, $deps);
-        $this->assertInstanceOf('Clue\PharComposer\Package\Package', reset($deps));
+        $this->assertInstanceOf(Package::class, reset($deps));
 
-        /* @var Clue\PharComposer\Package\Package $package */
+        /* @var Package $package */
         $package = reset($deps);
         $bundle = $package->bundle();
 
-        $this->assertInstanceOf('Clue\PharComposer\Package\Bundle', $bundle);
+        $this->assertInstanceOf(Bundle::class, $bundle);
         $this->assertSame(0, iterator_count($bundle));
-    }
-
-    private function getPathProjectAbsolute($path)
-    {
-        return realpath(__DIR__ . '/../../' . $path);
     }
 }

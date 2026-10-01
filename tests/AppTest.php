@@ -1,6 +1,7 @@
 <?php
 
 use Clue\PharComposer\App;
+use PHPUnit\Framework\TestCase;
 
 class AppTest extends TestCase
 {

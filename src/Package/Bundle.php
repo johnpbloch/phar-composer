@@ -15,7 +15,7 @@ class Bundle implements \IteratorAggregate
      *
      * @type  array
      */
-    private $resources = array();
+    private $resources = [];
 
     /**
      * add given file to bundle
@@ -83,11 +83,8 @@ class Bundle implements \IteratorAggregate
 
     /**
      * returns list of resources
-     *
-     * @return  \Traversable
      */
-    #[\ReturnTypeWillChange]
-    public function getIterator()
+    public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->resources);
     }

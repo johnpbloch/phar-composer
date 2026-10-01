@@ -387,7 +387,7 @@ class StubGenerator
      */
     private function arg($arg, $quote = "'")
     {
-        return $quote . addcslashes($arg, $quote) . $quote;
+        return $quote . addcslashes((string) $arg, $quote) . $quote;
     }
 
     /**

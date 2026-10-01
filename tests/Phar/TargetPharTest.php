@@ -1,124 +1,124 @@
 <?php
 
 use Clue\PharComposer\Package\Bundle;
-use Clue\PharComposer\Phar\TargetPhar;
 use Clue\PharComposer\Package\Package;
+use Clue\PharComposer\Phar\PharComposer;
+use Clue\PharComposer\Phar\TargetPhar;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Finder\Finder;
 
 class TargetPharTest extends TestCase
 {
-    /**
-     * instance to test
-     *
-     * @ype  TargetPhar
-     */
-    private $targetPhar;
-
-    private $mockPhar;
-
-    private $mockPharComposer;
-
-    /**
-     * set up test environment
-     *
-     * @before
-     */
-    public function setUpPhar()
-    {
-        if (PHP_VERSION_ID >= 50400 && PHP_VERSION_ID <= 50600) {
-            $this->markTestSkipped('Unable to mock \Phar on PHP 5.4/5.5');
-        }
-
-        $this->mockPhar = $this->getMockBuilder('\Phar')->disableOriginalConstructor()->getMock();
-        $this->mockPharComposer = $this->getMockBuilder('Clue\PharComposer\Phar\PharComposer')->disableOriginalConstructor()->getMock();
-        $this->targetPhar       = new TargetPhar($this->mockPhar, $this->mockPharComposer);
-    }
-
-    /**
-     * @test
-     */
+    #[Test]
     public function addFileCalculatesLocalPartForBox()
     {
-        $this->mockPharComposer->expects($this->once())
-                               ->method('getPathLocalToBase')
-                               ->with($this->equalTo('path/to/package/file.php'))
-                               ->will($this->returnValue('file.php'));
-        $this->mockPhar->expects($this->once())
-                      ->method('addFile')
-                      ->with($this->equalTo('path/to/package/file.php'), $this->equalTo('file.php'));
-        $this->targetPhar->addFile('path/to/package/file.php');
+        $mockPhar = $this->createMock(MockablePhar::class);
+        $mockPharComposer = $this->createMock(PharComposer::class);
+        $mockPharComposer->expects($this->once())
+                         ->method('getPathLocalToBase')
+                         ->with($this->equalTo('path/to/package/file.php'))
+                         ->willReturn('file.php');
+        $mockPhar->expects($this->once())
+                 ->method('addFile')
+                 ->with($this->equalTo('path/to/package/file.php'), $this->equalTo('file.php'));
+
+        $targetPhar = new TargetPhar($mockPhar, $mockPharComposer);
+        $targetPhar->addFile('path/to/package/file.php');
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function buildFromIteratorProvidesBasePathForBox()
     {
-        $mockPackage = new Package(array(), 'path/to/package');
-        $mockTraversable = $this->getMockBuilder('\Iterator')->getMock();
-        $this->mockPharComposer->expects($this->once())
-                               ->method('getPackageRoot')
-                               ->willReturn($mockPackage);
-        $this->mockPhar->expects($this->once())
-                      ->method('buildFromIterator')
-                      ->with($this->equalTo($mockTraversable), $this->equalTo('path/to/package/'));
-        $this->targetPhar->buildFromIterator($mockTraversable);
+        $mockPhar = $this->createMock(MockablePhar::class);
+        $mockPharComposer = $this->createMock(PharComposer::class);
+        $mockPackage = new Package([], 'path/to/package');
+        $mockTraversable = $this->createStub(\Iterator::class);
+        $mockPharComposer->expects($this->once())
+                         ->method('getPackageRoot')
+                         ->willReturn($mockPackage);
+        $mockPhar->expects($this->once())
+                 ->method('buildFromIterator')
+                 ->with($this->equalTo($mockTraversable), $this->equalTo('path/to/package/'));
+
+        $targetPhar = new TargetPhar($mockPhar, $mockPharComposer);
+        $targetPhar->buildFromIterator($mockTraversable);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function addPackageAddsResourcesFromCalculatedBundle()
     {
+        $mockPhar = $this->createMock(MockablePhar::class);
+        $mockPharComposer = $this->createMock(PharComposer::class);
         $bundle = new Bundle();
         $bundle->addFile('path/to/package/file.php');
-        $this->mockPharComposer->expects($this->once())
-                               ->method('getPathLocalToBase')
-                               ->with($this->equalTo('path/to/package/file.php'))
-                               ->will($this->returnValue('file.php'));
-        $this->mockPhar->expects($this->once())
-                      ->method('addFile')
-                      ->with($this->equalTo('path/to/package/file.php'), $this->equalTo('file.php'));
-        $mockFinder = $this->getMockBuilder('Symfony\Component\Finder\Finder')->disableOriginalConstructor()->getMock();
+        $mockPharComposer->expects($this->once())
+                         ->method('getPathLocalToBase')
+                         ->with($this->equalTo('path/to/package/file.php'))
+                         ->willReturn('file.php');
+        $mockPhar->expects($this->once())
+                 ->method('addFile')
+                 ->with($this->equalTo('path/to/package/file.php'), $this->equalTo('file.php'));
+        $mockFinder = $this->createStub(Finder::class);
         $bundle->addDir($mockFinder);
-        $mockPackage = new Package(array(), 'path/to/package');
-        $this->mockPharComposer->expects($this->once())
-                               ->method('getPackageRoot')
-                               ->willReturn($mockPackage);
-        $this->mockPhar->expects($this->once())
-                      ->method('buildFromIterator')
-                      ->with($this->equalTo($mockFinder), $this->equalTo('path/to/package/'));
-        $this->targetPhar->addBundle($bundle);
+        $mockPackage = new Package([], 'path/to/package');
+        $mockPharComposer->expects($this->once())
+                         ->method('getPackageRoot')
+                         ->willReturn($mockPackage);
+        $mockPhar->expects($this->once())
+                 ->method('buildFromIterator')
+                 ->with($this->equalTo($mockFinder), $this->equalTo('path/to/package/'));
+
+        $targetPhar = new TargetPhar($mockPhar, $mockPharComposer);
+        $targetPhar->addBundle($bundle);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function setsStubOnUnderlyingPhar()
     {
-        $this->mockPhar->expects($this->once())
-                       ->method('setStub')
-                       ->with($this->equalTo('some stub code'));
-        $this->targetPhar->setStub('some stub code');
+        $mockPhar = $this->createMock(MockablePhar::class);
+        $mockPhar->expects($this->once())
+                 ->method('setStub')
+                 ->with($this->equalTo('some stub code'));
+
+        $targetPhar = new TargetPhar($mockPhar, $this->createStub(PharComposer::class));
+        $targetPhar->setStub('some stub code');
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function stopBufferingStopsBufferingOnUnderlyingPhar()
     {
-        $this->mockPhar->expects($this->once())
-                       ->method('stopBuffering');
-        $this->targetPhar->stopBuffering();
+        $mockPhar = $this->createMock(MockablePhar::class);
+        $mockPhar->expects($this->once())
+                 ->method('stopBuffering');
+
+        $targetPhar = new TargetPhar($mockPhar, $this->createStub(PharComposer::class));
+        $targetPhar->stopBuffering();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function addFromStringOnUnderlyingPhar()
     {
-        $this->mockPhar->expects($this->once())
-                       ->method('addFromString')
-                       ->with('path/file', 'contents');
-        $this->targetPhar->addFromString('path/file', 'contents');
+        $mockPhar = $this->createMock(MockablePhar::class);
+        $mockPhar->expects($this->once())
+                 ->method('addFromString')
+                 ->with('path/file', 'contents');
+
+        $targetPhar = new TargetPhar($mockPhar, $this->createStub(PharComposer::class));
+        $targetPhar->addFromString('path/file', 'contents');
+    }
+}
+
+/**
+ * PHPUnit cannot reflect a default value for the internal `Phar::setStub()`
+ * `$length` parameter and would generate an implicitly nullable signature,
+ * which is deprecated as of PHP 8.4. Redeclaring it here gives the test
+ * double a proper signature to copy.
+ */
+class MockablePhar extends \Phar
+{
+    public function setStub($stub, int $length = -1): true
+    {
+        return parent::setStub($stub, $length);
     }
 }

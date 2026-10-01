@@ -75,7 +75,7 @@ class Packager
                 sleep($wait);
             }
 
-            $args = array_merge(array('php', '-d phar.readonly=off'), $_SERVER['argv']);
+            $args = array_merge(['php', '-d phar.readonly=off'], $_SERVER['argv']);
             if (pcntl_exec('/usr/bin/env', $args) === false) {
                 $this->log('<error>Unable to switch into new configuration</error>');
                 return;
@@ -133,11 +133,10 @@ class Packager
 
             $git = escapeshellarg($finder->find('git', 'git'));
 
-            $that = $this;
             $this->displayMeasure(
                 '[' . $step++ . '/' . $steps.'] Cloning <info>' . $url . '</info> into temporary directory <info>' . $path . '</info>',
-                function() use ($that, $url, $path, $version, $git) {
-                    $that->exec($git . ' clone ' . escapeshellarg($url) . ' ' . escapeshellarg($path));
+                function() use ($url, $path, $version, $git) {
+                    $this->exec($git . ' clone ' . escapeshellarg($url) . ' ' . escapeshellarg($path));
 
                     if ($version !== null) {
                         $this->exec($git . ' checkout ' . escapeshellarg($version) . ' 2>&1', $path);
@@ -158,9 +157,9 @@ class Packager
 
             $this->displayMeasure(
                 '[' . $step++ . '/' . $steps.'] Installing dependencies for <info>' . $package . '</info> into <info>' . $path . '</info> (using <info>' . $command . '</info>)',
-                function () use ($that, $command, $path) {
+                function () use ($command, $path) {
                     try {
-                        $that->exec($command, $path);
+                        $this->exec($command, $path);
                     }
                     catch (UnexpectedValueException $e) {
                         throw new UnexpectedValueException('Installing dependencies via composer failed', 0, $e);
@@ -185,12 +184,11 @@ class Packager
             }
             $command .= ' create-project ' . escapeshellarg($package) . ' ' . escapeshellarg($path) . ' --no-dev --no-progress --no-scripts';
 
-            $that = $this;
             $this->displayMeasure(
                 '[' . $step++ . '/' . $steps.'] Installing <info>' . $package . '</info> to temporary directory <info>' . $path . '</info> (using <info>' . $command . '</info>)',
-                function () use ($that, $command) {
+                function () use ($command) {
                     try {
-                        $that->exec($command);
+                        $this->exec($command);
                     }
                     catch (UnexpectedValueException $e) {
                         throw new UnexpectedValueException('Installing package via composer failed', 0, $e);
@@ -247,20 +245,9 @@ class Packager
     public function exec($cmd, $chdir = null)
     {
         $nl = true;
-
-        //
         $output = $this->output;
 
-        // Symfony 5+ requires 'fromShellCommandline', older versions support direct instantiation with command line
-        // @codeCoverageIgnoreStart
-        try {
-            new \ReflectionMethod('Symfony\Component\Process\Process', 'fromShellCommandline');
-            $process = Process::fromShellCommandline($cmd, $chdir);
-        } catch (\ReflectionException $e) {
-            $process = new Process($cmd, $chdir);
-        }
-        // @codeCoverageIgnoreEnd
-
+        $process = Process::fromShellCommandline($cmd, $chdir);
         $process->setTimeout(null);
         $code = $process->run(function($type, $data) use ($output, &$nl) {
             if ($nl === true) {

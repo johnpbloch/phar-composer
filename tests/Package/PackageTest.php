@@ -1,14 +1,15 @@
 <?php
 
 use Clue\PharComposer\Package\Package;
+use PHPUnit\Framework\TestCase;
 
 class PackageTest extends TestCase
 {
     public function testConstructorDefaults()
     {
-        $package = new Package(array(), 'dir/');
+        $package = new Package([], 'dir/');
 
-        $this->assertEquals(array(), $package->getBins());
+        $this->assertEquals([], $package->getBins());
         $this->assertEquals('dir/', $package->getDirectory());
         $this->assertEquals(null, $package->getName());
         $this->assertEquals('dir', $package->getShortName());
@@ -17,38 +18,31 @@ class PackageTest extends TestCase
 
     public function testGetShortNameReturnsLastPathComponentWhenNameIsUnknown()
     {
-        $package = new Package(array(), __DIR__);
+        $package = new Package([], __DIR__);
 
         $this->assertEquals('Package', $package->getShortName());
     }
 
     public function testConstructorData()
     {
-        $package = new Package(array(
+        $package = new Package([
             'name' => 'acme/test',
-            'bin' => array('bin/main', 'bin2'),
-            'config' => array(
+            'bin' => ['bin/main', 'bin2'],
+            'config' => [
                 'vendor-dir' => 'src/vendors'
-            )
-        ), 'dir/');
+            ]
+        ], 'dir/');
 
-        $this->assertEquals(array('bin/main', 'bin2'), $package->getBins());
+        $this->assertEquals(['bin/main', 'bin2'], $package->getBins());
         $this->assertEquals('acme/test', $package->getName());
         $this->assertEquals('test', $package->getShortName());
         $this->assertEquals('src/vendors/', $package->getPathVendor());
     }
 
-    private function createMockLogger()
-    {
-        return $this->getMockBuilder('Clue\PharComposer\Logger')
-                    ->disableOriginalConstructor()
-                    ->getMock();
-    }
-
     public function testBundleWillContainComposerJsonButNotVendor()
     {
         $dir = realpath(__DIR__ . '/../fixtures/03-project-with-phars') . DIRECTORY_SEPARATOR;
-        $package = new Package(array(), $dir);
+        $package = new Package([], $dir);
         $bundle = $package->bundle();
 
         $this->assertTrue($bundle->contains($dir . 'composer.json'));
@@ -58,7 +52,7 @@ class PackageTest extends TestCase
     public function testBundleWillNotContainComposerPharInRoot()
     {
         $dir = realpath(__DIR__ . '/../fixtures/03-project-with-phars') . DIRECTORY_SEPARATOR;
-        $package = new Package(array(), $dir);
+        $package = new Package([], $dir);
         $bundle = $package->bundle();
 
         $this->assertFalse($bundle->contains($dir . 'composer.phar'));
@@ -68,7 +62,7 @@ class PackageTest extends TestCase
     public function testBundleWillContainComposerPharFromSrc()
     {
         $dir = realpath(__DIR__ . '/../fixtures/04-project-with-phars-in-src') . DIRECTORY_SEPARATOR;
-        $package = new Package(array(), $dir);
+        $package = new Package([], $dir);
         $bundle = $package->bundle();
 
         $this->assertTrue($bundle->contains($dir . 'composer.json'));

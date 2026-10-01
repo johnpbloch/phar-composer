@@ -10,9 +10,11 @@ class App extends BaseApplication
     {
         parent::__construct('phar-composer', '@dev');
 
-        $this->add(new Command\Build());
-        $this->add(new Command\Search());
-        $this->add(new Command\Install());
+        $this->addCommands([
+            new Command\Build(),
+            new Command\Search(),
+            new Command\Install(),
+        ]);
 
         $this->setDefaultCommand('search');
     }

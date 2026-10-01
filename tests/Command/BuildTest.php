@@ -1,6 +1,11 @@
 <?php
 
 use Clue\PharComposer\Command\Build;
+use Clue\PharComposer\Phar\Packager;
+use Clue\PharComposer\Phar\PharComposer;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class BuildTest extends TestCase
 {
@@ -9,26 +14,25 @@ class BuildTest extends TestCase
         $command = new Build();
 
         $ref = new ReflectionProperty($command, 'packager');
-        $ref->setAccessible(true);
         $packager = $ref->getValue($command);
 
-        $this->assertInstanceOf('Clue\PharComposer\Phar\Packager', $packager);
+        $this->assertInstanceOf(Packager::class, $packager);
     }
 
     public function testExecuteBuildWillBuildPharer()
     {
-        $input = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
-        $input->expects($this->exactly(2))->method('getArgument')->withConsecutive(
-            array('project'),
-            array('target')
-        )->willReturnOnConsecutiveCalls('dir', null);
-        $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
+        $input = $this->createMock(InputInterface::class);
+        $input->expects($this->exactly(2))->method('getArgument')->willReturnMap([
+            ['project', 'dir'],
+            ['target', null]
+        ]);
+        $output = $this->createStub(OutputInterface::class);
 
-        $pharer = $this->getMockBuilder('Clue\PharComposer\Phar\PharComposer')->disableOriginalConstructor()->getMock();
+        $pharer = $this->createMock(PharComposer::class);
         $pharer->expects($this->never())->method('setTarget');
         $pharer->expects($this->once())->method('build');
 
-        $packager = $this->getMockBuilder('Clue\PharComposer\Phar\Packager')->getMock();
+        $packager = $this->createMock(Packager::class);
         $packager->expects($this->once())->method('setOutput')->with($output);
         $packager->expects($this->once())->method('getPharer')->with('dir')->willReturn($pharer);
 
@@ -38,18 +42,18 @@ class BuildTest extends TestCase
 
     public function testExecuteBuildWillBuildPharerWithExplicitTarget()
     {
-        $input = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
-        $input->expects($this->exactly(2))->method('getArgument')->withConsecutive(
-            array('project'),
-            array('target')
-        )->willReturnOnConsecutiveCalls('dir', 'targetDir');
-        $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
+        $input = $this->createMock(InputInterface::class);
+        $input->expects($this->exactly(2))->method('getArgument')->willReturnMap([
+            ['project', 'dir'],
+            ['target', 'targetDir']
+        ]);
+        $output = $this->createStub(OutputInterface::class);
 
-        $pharer = $this->getMockBuilder('Clue\PharComposer\Phar\PharComposer')->disableOriginalConstructor()->getMock();
+        $pharer = $this->createMock(PharComposer::class);
         $pharer->expects($this->once())->method('setTarget')->with('targetDir');
         $pharer->expects($this->once())->method('build');
 
-        $packager = $this->getMockBuilder('Clue\PharComposer\Phar\Packager')->getMock();
+        $packager = $this->createMock(Packager::class);
         $packager->expects($this->once())->method('setOutput')->with($output);
         $packager->expects($this->once())->method('getPharer')->with('dir')->willReturn($pharer);
 

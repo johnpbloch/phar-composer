@@ -18,7 +18,7 @@ class Install extends Command
     /** @var bool */
     private $isWindows;
 
-    public function __construct(Packager $packager = null, $isWindows = null)
+    public function __construct(?Packager $packager = null, $isWindows = null)
     {
         if ($packager === null) {
             $packager = new Packager();
@@ -32,7 +32,7 @@ class Install extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('install')
              ->setDescription('Install phar into system wide binary directory' . ($this->isWindows ? ' (not available on Windows)' : ''))

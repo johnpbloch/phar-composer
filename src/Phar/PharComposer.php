@@ -117,7 +117,7 @@ class PharComposer
      */
     public function getPackagesDependencies()
     {
-        $packages = array();
+        $packages = [];
 
         $pathVendor = $this->package->getDirectory() . $this->package->getPathVendor();
 

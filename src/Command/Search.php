@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Clue\PharComposer\Command;
 
 use Clue\PharComposer\Phar\Packager;
@@ -27,7 +26,7 @@ class Search extends Command
     /** @var bool */
     private $isWindows;
 
-    public function __construct(Packager $packager = null, Client $packagist = null, $isWindows = null)
+    public function __construct(?Packager $packager = null, ?Client $packagist = null, $isWindows = null)
     {
         if ($packager === null) {
             $packager = new Packager();
@@ -45,7 +44,7 @@ class Search extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('search')
              ->setDescription('Interactive search for project name')
@@ -71,7 +70,7 @@ class Search extends Command
         }
 
         // use numeric keys for all options
-        $select = array_merge(array(0 => $abortable), array_values($choices));
+        $select = array_merge([0 => $abortable], array_values($choices));
         if ($abortable === null) {
             unset($select[0]);
         }
@@ -106,7 +105,7 @@ class Search extends Command
                 $output->writeln('Searching for <info>' . $project . '</info>...');
             }
 
-            $choices = array();
+            $choices = [];
             foreach ($this->packagist->search($project) as $result) {
                 assert($result instanceof Result);
 
@@ -127,15 +126,13 @@ class Search extends Command
         $package = $this->packagist->get($project);
         assert($package instanceof Package);
 
-        $choices = array();
+        $choices = [];
         foreach ($package->getVersions() as $version) {
             assert($version instanceof Version);
 
             $label = $version->getVersion();
 
-            /* @var ?string $bin */
-            $bin = $version->getBin();
-            $label .= $bin !== null ? ' (☑ executable bin)' : ' (<error>no executable bin</error>)';
+            $label .= $version->getBin() ? ' (☑ executable bin)' : ' (<error>no executable bin</error>)';
 
             $choices[$version->getVersion()] = $label;
         }
@@ -146,10 +143,10 @@ class Search extends Command
             $input,
             $output,
             'Action',
-            array_filter(array(
+            array_filter([
                 'build'   => 'Build project',
                 'install' => $this->isWindows ? null : 'Install project system-wide'
-            )),
+            ]),
             'Quit'
         );
 
