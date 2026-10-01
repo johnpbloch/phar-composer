@@ -17,7 +17,7 @@ passthru('
 rm -rf build && mkdir build &&
 cp -r bin/ src/ composer.json LICENSE build/ && rm build/bin/build.php build/src/Box/Extract.php &&
 sed -i \'s/@dev/' . $version .'/g\' build/src/App.php &&
-composer config -d build/ platform.php 7.0.33 &&
+composer config -d build/ platform.php 8.4.25 &&
 composer install -d build/ --no-dev &&
 
 cd build/vendor && rm -rf */*/tests/ */*/src/tests/ */*/docs/ */*/*.md */*/composer.* */*/phpunit.* */*/.gitignore */*/.*.yml */*/*.xml && cd - >/dev/null &&
